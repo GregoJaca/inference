@@ -1,10 +1,10 @@
 # Quantization + Draft-Head Check
 
-**Quantize without losing speed or tool calls. We check the draft head and tool calls on your traffic and fix what breaks.**
+**Quantize without losing speed or capabilities. We check the draft head and tool calls on your traffic and fix what breaks.**
 
-Deliver: go/no-go + recipe + numbers (acceptance by prompt type, tok/s, drift vs BF16, tool-call pass rate).
+Problem: quantization degrades model performance. there is no widely used solution to prevent deterioration of the speculative head, which can make decoding slower after quantization.
 
-First proof (todo): NVIDIA's NVFP4 V4 Flash vs BF16, acceptance by prompt type + tool-call pass rate.
+Deliver: quantize or verify your model, keep or build its MTP head, and test on your traffic with a before/after report. recipe (specific to your traffic) + numbers (acceptance by prompt type, tok/s, drift vs BF16, tool-call pass rate).
 
 ## Failures → evidence
 
@@ -28,19 +28,17 @@ First proof (todo): NVIDIA's NVFP4 V4 Flash vs BF16, acceptance by prompt type +
 | Train head | Model Optimizer, [SpecForge](https://github.com/sgl-project/SpecForge), [TorchSpec](https://github.com/torchspec-project/TorchSpec), [vLLM Speculators](https://github.com/vllm-project/speculators) | pipeline: customer prompts → answers from target model, correct chat template |
 | Serve + load | vLLM / SGLang / TensorRT-LLM, [GuideLLM](https://github.com/vllm-project/guidellm) | logs → replay converter |
 | Quality | [infer-check](https://pypi.org/project/infer-check/); method per [Fireworks](https://docs.fireworks.ai/models/model-quality) (KL + tool tests) | tool-call + multi-turn suites; acceptance by prompt type + context length |
-| Brain | Claude Code (closed) | per-model failure checklist, report |
 
-## Client touchpoints
+## Client requirements
 
-- **Model:** checkpoint they run + how it was quantized.
+- **Model:** model checkpoint they run + how it was quantized.
 - **Hardware:** GPU type + count.
-- **Logs:** 1-2 days: lengths, timings, tool calls. No prompt text.
+- **Logs:** traffic, lengths, timings, tool calls. No prompt text.
 - **Tool schemas** + real tool-call examples = what "correct" means.
 - **Quality bar:** tasks that must not regress, and by how much.
 - **Shell:** test box or spare GPUs; read-only on prod.
 - **Metrics + launch command:** engine `/metrics`, serve flags.
 - **Prompts + permission:** only to train a head; GPU time for training (ours or theirs).
-- **DPA** if EU and prompt text involved.
 
 ## Competitors
 
@@ -56,11 +54,9 @@ First proof (todo): NVIDIA's NVFP4 V4 Flash vs BF16, acceptance by prompt type +
 | HF community quants | Free builds | Open | Uneven: V4 Flash build had 15% head acceptance |
 | [infer-check](https://pypi.org/project/infer-check/) | Quant/engine diff tests | Open | Tool-use suites only planned |
 
-Gap: found no one checking head + tool calls on the customer's own traffic. Search not exhaustive.
+Gap: found no one checking head + tool calls on the customer's own traffic.
 
 ## Sources
-
-As of 2026-10-11. Mostly community builds and other vendors' tests; one author per card.
 
 - [V4 Flash NVFP4 build](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4)
 - [GLM-5.2 INT4 build](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP)

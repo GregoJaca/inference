@@ -1,8 +1,8 @@
 # Serving Config Tuning
 
-**Engine defaults ≠ your traffic. Replay your requests, search settings on your box, ship only what passes latency + quality gates.**
+**Engine defaults ≠ your traffic. Replay your requests, search settings on your hardware, ship what passes latency + quality gates.**
 
-Honest take: thin. Free tuners exist. Sell as a service or as an audit module.
+Problem: inference engine defaults fit the average case, not your exact needs.
 
 ## Numbers
 
@@ -13,7 +13,6 @@ Honest take: thin. Free tuners exist. Sell as a service or as an audit module.
 | CPU cores per GPU | TTFT 1.47-7.11x | [Georgia Tech](https://arxiv.org/abs/2603.22774) |
 | Host noise | -8.8% / -20.5% tok/s; pinning +7.6% (1 GPU, 0.6B model) | [Eunomia](https://eunomia.dev/blog/2026/05/24/measuring-cpu-noise-in-gpu-inference-with-ebpf/) |
 | Draft head vs load | Kimi K2.5: 1.90x @4 concurrent → 1.69x @64. MiniMax M2.5: 1.79x → 1.38x. Shrinks at 8K prompts | [AMD](https://rocm.blogs.amd.com/artificial-intelligence/eagle3-speculative-decoding/README.html) |
-| $ | +10% tok/s on 8 GPUs @ $2.50/GPU-h ≈ $17.5k/yr | our math |
 
 ## Use vs build
 
@@ -29,14 +28,13 @@ Honest take: thin. Free tuners exist. Sell as a service or as an audit module.
 
 ## Client touchpoints
 
-- **Logs:** 1-2 days: arrival time, in/out tokens, streaming, tool calls. No prompt text.
+- **Logs:** traffic, arrival time, in/out tokens, streaming, tool calls. No prompt text.
 - **Config:** launch command, engine version, deploy files (k8s/Slurm/Docker).
 - **Hardware:** GPU type + count, CPU cores, RAM, shared or dedicated.
 - **Targets:** p99, TTFT, quality bar, monthly GPU $.
 - **Metrics:** engine `/metrics`.
 - **Box:** spare server or window; root for host settings.
 - **PR access:** optional, if we deliver the change.
-- **DPA** if EU and prompt text involved.
 
 ## Competitors
 
@@ -49,11 +47,10 @@ Honest take: thin. Free tuners exist. Sell as a service or as an audit module.
 | [Zymtrace](https://zymtrace.com/) | Profiling + agent skills | Closed, free tier | Code/kernels, not settings |
 | Baseten, Fireworks | Tune for you | Closed | Must move platform |
 
-Real rival: free tools + a team with Claude Code. Our edge: traffic replay, host layer, quality gate, doing the work. Consultancies: not verified.
+There are free tools.
 
 ## Sources
 
-As of 2026-10-11. Mostly small models or vendor claims; "our math" = ours.
 
 - [NVIDIA AIConfigurator](https://docs.nvidia.com/dynamo/latest/performance/aiconfigurator.html)
 - [SLO-Tuner](https://arxiv.org/abs/2603.11340)

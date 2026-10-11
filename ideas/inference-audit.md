@@ -1,8 +1,15 @@
 # Inference Audit
 
-**Same GPUs, more tokens. We find what slows your vLLM/SGLang boxes, fix it, prove it on your traffic.**
+**Same GPUs, more tokens. We find the problem, fix it, prove it on your traffic.**
 
-Deliver in \~1 week: PR + before/after table (tok/s, TTFT, p99, $/M tokens).
+Problem: self-hosted inference runs on default / hand-tuned config. GPUs wait on the server; config isn't optimal for your traffic; quantization breaks the speed-up or degrades tool calls.
+
+Examples: 
+- a badly quantized MTP (multi-token-prediction) was right 15% of the time and became right 49% of the time after the fix, which took decoding from 112 to 200 tokens/s. [V4 Flash NVFP4](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4) 
+- MTP is worth it at low concurrency, 10% impovement if you choose right. [card](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP)
+- Giving CPU-starved servers enough cores reduced first-token time 1.47-7.11x. [Georgia Tech](https://arxiv.org/abs/2603.22774) 
+
+Deliver: audit + PR + before/after table (tok/s, TTFT, p99, $/M tokens).
 
 ## Pain → fix → proof
 
@@ -14,8 +21,6 @@ Deliver in \~1 week: PR + before/after table (tok/s, TTFT, p99, $/M tokens).
 | Model has no draft head | Train EAGLE-3 on customer traffic | 1.5-2.5x latency [Baseten](https://www.baseten.co/blog/how-to-train-custom-eagle-3-heads-for-speculative-decoding/). Kimi K2.5 1.69-2.00x [AMD](https://rocm.blogs.amd.com/artificial-intelligence/eagle3-speculative-decoding/README.html) |
 | Draft accuracy depends on traffic | Measure per prompt type + context; set depth, on/off | GLM-5.2: 28% synthetic vs 46-52% real [card](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP) |
 | Quantization hurts tool calls | Tool-call + multi-turn tests vs BF16 | Done right: INT4 82.0 vs FP8 82.2 SWE-bench [card](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP) |
-
-$: +10% tok/s on 8 GPUs @ $2.50/GPU-h ≈ $17.5k/yr (our math).
 
 ## Use vs build
 
@@ -31,16 +36,13 @@ $: +10% tok/s on 8 GPUs @ $2.50/GPU-h ≈ $17.5k/yr (our math).
 
 ## Client touchpoints
 
-- **Logs:** 1-2 days: arrival time, in/out tokens, streaming, tool calls. No prompt text.
+- **Logs:** traffic, arrival time, in/out tokens, streaming, tool calls. No prompt text.
 - **Config:** launch command, engine version, k8s/Slurm/Docker files.
 - **Metrics:** vLLM `/metrics` (Prometheus).
 - **Shell:** read-only on 1 box; root for host tuning.
 - **Box:** spare server or time window for before/after.
 - **Quality:** their tool schemas + eval set, if any.
-- **PR access:** only for "we fix".
 - **Prompts:** only to train a head; stay on their machines; DPA if EU.
-
-Modes: we fix (PR + bench) · we look (read-only report) · they run (toolkit + skills in their Claude Code).
 
 ## Competitors
 
@@ -54,11 +56,9 @@ Modes: we fix (PR + bench) · we look (read-only report) · they run (toolkit + 
 | [Red Hat AI](https://www.redhat.com/en/blog/unleash-full-potential-llms-optimize-performance-vllm) | LLM Compressor, GuideLLM, LLM-Tuna | Open + paid | Tools, not outcome |
 | Open tuners | auto\_tune.sh, llm-optimizer, vllm-tuner | Open | Free; no host layer, no quality gate |
 
-Gap: found no one verifying draft head + tool calls on the customer's own boxes. Search not exhaustive.
+Gap: found no one verifying draft head + tool calls on the customer's own traffic and load.
 
 ## Sources
-
-As of 2026-10-11. Others' tests: small models, community builds, other GPUs. Estimates marked "our math".
 
 - [Eunomia: CPU noise](https://eunomia.dev/blog/2026/05/24/measuring-cpu-noise-in-gpu-inference-with-ebpf/)
 - [Georgia Tech: CPU slowdowns](https://arxiv.org/abs/2603.22774)
