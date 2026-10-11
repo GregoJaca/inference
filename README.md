@@ -1,0 +1,1 @@
+Project ideas on compute efficientcy
