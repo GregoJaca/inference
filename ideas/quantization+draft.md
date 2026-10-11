@@ -11,7 +11,7 @@ Deliver: quantize or verify your model, keep or build its MTP head, and test on 
 | Failure | Evidence |
 | --- | --- |
 | Head dropped on save | `transformers` silently drops `mtp.*`: 15/15 tensors lost. Wrong name in exclude list: server crash-loops, build says OK [Qwythos](https://huggingface.co/PassingByPixels/Qwythos-27B-v1-NVFP4-MTP) |
-| Head wrong format | V4 Flash NVFP4: accept 15% (net slowdown) → 49.4%; 112 → 200 tok/s (1.78x) [build](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4) |
+| Head wrong format | MTP acceptance: 15% (net slowdown) → 49.4% (fix); 112 → 200 tok/s (1.78x) [V4 Flash NVFP4 build](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4) |
 | Head precision | V4 Flash: FP8 head 3.51 vs BF16 4.09 tok/step. Kimi K2.5: FP8 head 1.76-2.00x vs BF16 1.69-1.90x [AMD](https://rocm.blogs.amd.com/artificial-intelligence/eagle3-speculative-decoding/README.html). Opposite results → test per model |
 | Calibration | Skip rare experts → fluent but broken model [GLM-5.2 INT4](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP) |
 | Accuracy depends on traffic | GLM-5.2: 28% synthetic vs 46-52% real. Kimi K2.5 head: 2.34 (humanities) to 3.43 (math) tok/step [NVIDIA](https://huggingface.co/nvidia/Kimi-K2.5-Thinking-Eagle3). 0.949 @2.7K ctx → 0.544 @93.6K [Qwythos](https://huggingface.co/PassingByPixels/Qwythos-27B-v1-NVFP4-MTP) |

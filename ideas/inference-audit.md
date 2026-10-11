@@ -2,7 +2,7 @@
 
 **Same GPUs, more tokens. We find the problem, fix it, prove it on your traffic.**
 
-Problem: self-hosted inference runs on default / hand-tuned config. GPUs wait on the server; config isn't optimal for your traffic; quantization breaks the speed-up or degrades tool calls.
+Problem: self-hosted inference runs on default / hand-tuned config. GPUs wait on the server; settings not optimal for your traffic; quantization breaks the speed-up or degrades tool calls.
 
 Examples: 
 - a badly quantized MTP (multi-token-prediction) was right 15% of the time and became right 49% of the time after the fix, which took decoding from 112 to 200 tokens/s. [V4 Flash NVFP4](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4) 
@@ -15,11 +15,11 @@ Deliver: audit + PR + before/after table (tok/s, TTFT, p99, $/M tokens).
 
 | Pain | Fix | Public number |
 | --- | --- | --- |
+| Quantization breaks draft head | Keep head BF16, list it in ignore | MTP acceptance 15% → 49%; tok/s: 112 → 200 [V4 Flash NVFP4](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4) |
+| Draft accuracy depends on traffic | Measure per prompt type + context; set depth, on/off | MTP spec-decode acceptance: 28% synthetic wordload vs 46-52% real [GLM-5.2 card](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP) |
 | GPU idle, CPU late (shared box, container limits) | Pin cores, move IRQs, more cores per GPU | Mixed load -20.5% tok/s; pinning +7.6% (1 GPU, 0.6B model) [Eunomia](https://eunomia.dev/blog/2026/05/24/measuring-cpu-noise-in-gpu-inference-with-ebpf/). TTFT 1.47-7.11x with enough cores [Georgia Tech](https://arxiv.org/abs/2603.22774) |
 | Settings ≠ traffic | Replay + search flags, GPU split, batch, cache | ≤1.7x vs manual, vendor claim [AIConfigurator](https://docs.nvidia.com/dynamo/latest/performance/aiconfigurator.html). p99 1.36 → 0.70 s, toy model [SLO-Tuner](https://arxiv.org/abs/2603.11340) |
-| Quantization breaks draft head | Keep head BF16, list it in ignore | Head accepted 15% → 49%; 112 → 200 tok/s [V4 Flash NVFP4](https://huggingface.co/Rarri/DeepSeek-V4-Flash-0731-NVFP4) |
 | Model has no draft head | Train EAGLE-3 on customer traffic | 1.5-2.5x latency [Baseten](https://www.baseten.co/blog/how-to-train-custom-eagle-3-heads-for-speculative-decoding/). Kimi K2.5 1.69-2.00x [AMD](https://rocm.blogs.amd.com/artificial-intelligence/eagle3-speculative-decoding/README.html) |
-| Draft accuracy depends on traffic | Measure per prompt type + context; set depth, on/off | GLM-5.2: 28% synthetic vs 46-52% real [card](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP) |
 | Quantization hurts tool calls | Tool-call + multi-turn tests vs BF16 | Done right: INT4 82.0 vs FP8 82.2 SWE-bench [card](https://huggingface.co/canada-quant/GLM-5.2-W4A16-MTP) |
 
 ## Use vs build
