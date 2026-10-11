@@ -1,4 +1,4 @@
-# Quantization + Draft-Head Check
+# Quantization + MTP Head improve
 
 **Quantize without losing speed or capabilities. We check the draft head and tool calls on your traffic and fix what breaks.**
 
